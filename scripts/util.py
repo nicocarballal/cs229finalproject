@@ -16,7 +16,17 @@ import random
 
 # Creates a new .shp file with only the country entries that you specified
 # WARNING: Takes a long time to run
-def filter_by_country(fires_data, country, month, year, max_iterations = 10000):
+def filter_by_country(fires_data, country, month, year):
+    '''
+    Takes Global .shp, .dbf data and returns to you a .shp, .dbf with only the data of a country (Currently only does the United States) 
+               We could use different bounding boxes if we wanted to do different countries.
+    Inputs:
+    fires_data --> The output of the .shp
+    fires_data = shapefile.Reader("example.shp")
+    country --> country you want to filter for 
+    month --> Used for dataset creation when going through month by month data
+    year --> Used for dataset creation when going through year by year data
+    '''
     fireIds = set()
     w = shapefile.Writer('./../data/United_States_{filter_year}_Fires/{filter_month}/{filter_country}_fires_{filter_month}_{filter_year}.shp'.format(filter_country = country, filter_month = month, filter_year = year))
     w.fields = fires_data.fields[1:]
@@ -59,8 +69,18 @@ def filter_by_country(fires_data, country, month, year, max_iterations = 10000):
     print("FINAL Time Passed: ", time.time() - starting_time, " seconds")
     w.close()     
 
-# Returns a database with only certain Id entries
+# Returns a database with only certain Id entries. 
 def sort_by_id(df,eyeD):
+    '''
+    Returns a database with only certain ID entries sorted by date
+    
+    Inputs: 
+    df --> Pandas dataframe with the entries of the .dbf file
+    df has 4 columns ['IDate', 'Type', 'ID', 'FDate']
+    eyeD --> ID you want to filter by 
+    Output:
+    sorted_id --> Sorted dataframe by date with only certain Ids
+    '''
     # Get data for just one fire
     sorted_id = df.loc[df['Id'] == eyeD]
     sorted_id = sorted_id.sort_values(by='IDate')
@@ -68,7 +88,22 @@ def sort_by_id(df,eyeD):
     
 
     
-def plotPolygons(oldBurnIndexArrays, newBurnIndexArray, date, figureIndex):
+def plotPolygons(oldBurnIndexArrays, newBurnIndexArray, date, figureIndex = 1):
+    '''
+    Plots your fire polygons by date and differentiates between old burns and new burns
+    
+    As a definition, a BurnIndexArray is a list of the vertices of the polygons that are burning. If you have two squares burning,
+    it may look like:
+    
+    BurnIndexArray = [ [ (0,0), (0,1), (1,1), (1,0) ], [ (2,2), (2,3), (3,3), (3,2) ]
+    
+    Inputs:
+  
+    oldBurnIndexArrays --> List of all the burn index arrays from previous days
+    newBurnIndexArray --> The burn index array for the new day
+    date --> date of the new Burn Fire
+    figureIndex --> Allows you to create several separate figures
+    '''
     fig = plt.figure(figureIndex)
     ax = fig.add_subplot(111)
     polygon_array = []
@@ -89,6 +124,20 @@ def plotPolygons(oldBurnIndexArrays, newBurnIndexArray, date, figureIndex):
         
     
 def dayToDayProgression(df, eyeD, shapeRecords):
+    
+    '''
+    Plot all the day to day progression of a fire
+    
+    Inputs:
+    df --> Pandas dataframe with the entries of the .dbf file
+    df has 4 columns ['IDate', 'Type', 'ID', 'FDate']
+    shapeRecords --> The shape records (for example)
+    shape = shapefile.Reader("example.shp")
+    shape_records = shape.shapeRecords() 
+    eyeD --> ID you want to filter by 
+    Output:
+    A day to day plot of the fire progression
+    '''
     # Detailing the day to day progression of a fire
     # It looks like some dates have better data than others, which is interesting. General trends look okay though for a first go around! 
     ID_df = sort_by_id(df,eyeD)
@@ -98,7 +147,8 @@ def dayToDayProgression(df, eyeD, shapeRecords):
     polygon_date_array = []
     polygon_date_dict = {}
     for row in ID_df.iterrows():
-        print(row)
+        if row[1]['Type'] == 'FinalArea':
+            continue
         feature = shapeRecords[row[0]]
         if row[1]['FDate'] == lastFDate:
             polygon_date_array.append(feature.shape.points) 

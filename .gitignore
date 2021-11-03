@@ -1,1 +1,5 @@
+scripts/.vscode/
+.vscode/
+scripts/.ipynb_checkpoints/
+data/United_States_Fires/
 *.pyc
