@@ -10,6 +10,7 @@ import matplotlib.pyplot as plt
 from matplotlib.collections import PolyCollection
 from matplotlib.patches import Polygon
 import matplotlib as mpl
+import itertools
 
 '''
 The functions in this file can be used for working through the data of a single fire.
@@ -30,8 +31,8 @@ def initialize_grid_representation(xRange, yRange, xDiff, yDiff):
     yDiff --> Smallest witnessed distance for a y edge of a vertex of a fire polygon (defines the smallest "unit fire" our wildfire data has)
     Output: Returns numpy array of zeros after discretization
     '''
-    lonSquares = (xRange[1] - xRange[0])/xDiff
-    latSquares = (yRange[1] - yRange[0])/yDiff
+    lonSquares = (xRange[1] - xRange[0])/xDiff + 1
+    latSquares = (yRange[1] - yRange[0])/yDiff + 1
     return np.zeros((int(lonSquares), int(latSquares)))
 
 
@@ -104,24 +105,64 @@ def multi_day_fire_representation(shape_records, sorted_df, final_fire_indices):
  
     multiDayFireGrid = multi_day_fire_initialization(final_fire_indices, sorted_df.IDate.nunique())
     xRange, yRange, xDiff, yDiff = get_fire_shape_and_discretization(final_fire_indices)
+    x_coordinates = np.arange(xRange[0], xRange[1], xDiff)
+    y_coordinates = np.arange(yRange[0], yRange[1], yDiff)
     lastFDate = None
     k = -1
+    day_fire_paths = []
     for row in sorted_df.iterrows():
         shape_record = shape_records[row[0]]
         fire_polygon_indices = np.array([shape_record.shape.points])
         polygon = Polygon(fire_polygon_indices[0])
-        x_coordinates = np.arange(xRange[0], xRange[1], xDiff)
-        y_coordinates = np.arange(yRange[0], yRange[1], yDiff)
-        if row[1]['IDate'] != lastFDate:     
+        new_path = polygon.get_path()
+        if row[1]['Type'] == 'FinalArea':
+            continue
+        elif k == -1:
+            k = 0
+            lastFDate = row[1]['IDate']
+            day_fire_paths = [new_path]
+            continue
+        elif row[1]['IDate'] != lastFDate:     
             k += 1
             lastFDate = row[1]['IDate']
-        path = polygon.get_path()
+        else: 
+            day_fire_paths.append(new_path)
+            continue
 
-        for i in range(len(x_coordinates)):
+        # Should I only iterate over possible x_coordinates for a single day of fire? Could speed things up drastically
+        all_Vertices = np.array([[np.min(day_fire_paths[i].vertices,axis=0), np.max(day_fire_paths[i].vertices,axis=0)] for i in range(len(day_fire_paths))])
+        #min_Range = np.min(all_Vertices, axis = 0)
+        #max_Range = np.max(all_Vertices, axis = 0)
+
+        to_check = set()
+
+        for vertex in all_Vertices:
+            min_Range = (vertex[0][0], vertex[0][1])
+            max_Range = (vertex[1][0], vertex[1][1])
+
+            x_indices = (round((min_Range[0] - xRange[0])/xDiff), round((max_Range[0] - xRange[0])/xDiff))
+            y_indices = (round((min_Range[1] - yRange[0])/yDiff), round((max_Range[1] - yRange[0])/yDiff))
+
+
+            a = itertools.product(list(range(max(x_indices[0] - 1, 0), min(x_indices[1] + 1, len(x_coordinates)))), list(range(max(y_indices[0] - 1, 0), min(y_indices[1] + 1, len(y_coordinates)))))
+            '''
+            check_x_indices = check_x_indices.union(list(range(max(x_indices[0] - 1, 0), min(x_indices[1] + 1, len(x_coordinates)))))
+            check_y_indices = check_y_indices.union(list(range(max(y_indices[0] - 1, 0), min(y_indices[1] + 1, len(y_coordinates)))))
+            '''
+            to_check = to_check.union(a)
+
+
+
+        for block in to_check:
+            i = block[0]
+            j = block[1]
             x = x_coordinates[i]
-            for j in range(len(y_coordinates)):
-                y = y_coordinates[j]
-                point = (x, y)
-                if path.contains_point(point, radius = -xDiff):
+            y = y_coordinates[j]
+            point = (x, y)
+            for path in day_fire_paths:
+                if path.contains_point(point, radius = 0): ## look into how to set radius
                     multiDayFireGrid[k][i][j] = 1
+                
+                    break
+        day_fire_paths = [new_path]
     return multiDayFireGrid
