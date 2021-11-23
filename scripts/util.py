@@ -10,8 +10,8 @@ import matplotlib.pyplot as plt
 from matplotlib.collections import PolyCollection
 import matplotlib as mpl
 from datetime import datetime
-import geocoder
-import googlemaps
+#import geocoder
+#import googlemaps
 import random
 
 # Creates a new .shp file with only the country entries that you specified

@@ -29,6 +29,10 @@ def main(parent_path, yr):
     for subdir, dirs, files in os.walk(parent_path):
         for directory in dirs:
 
+
+            if directory not in ['jan', 'feb', 'mar', 'apr', 'may', 'jun', 'jul', 'aug', 'sep', 'oct', 'nov', 'dec']:
+                continue
+
             for file in os.listdir(r"{path}/{month}/".format(path = subdir, month = directory)): 
                 # check the files which are end with specific extension
                 if file.endswith(".shp"):
@@ -47,9 +51,8 @@ def main(parent_path, yr):
 
 
 if __name__ == '__main__':
-    main('C:\\Users\\nico\\Desktop\\Stanford\\OneDrive - Stanford\\Courses\\CS229\\finalproject\\data\\United_States_Fires\\United_States_2017_Fires\\', '2017')
+    #main('C:\\Users\\nico\\Desktop\\Stanford\\OneDrive - Stanford\\Courses\\CS229\\finalproject\\data\\United_States_Fires\\United_States_2017_Fires\\', '2017')
     main('C:\\Users\\nico\\Desktop\\Stanford\\OneDrive - Stanford\\Courses\\CS229\\finalproject\\data\\United_States_Fires\\United_States_2016_Fires\\', '2016')
-   
-    main('C:\\Users\\nico\\Desktop\\Stanford\\OneDrive - Stanford\\Courses\\CS229\\finalproject\\data\\United_States_Fires\\United_States_2018_Fires\\', '2018')
-    main('C:\\Users\\nico\\Desktop\\Stanford\\OneDrive - Stanford\\Courses\\CS229\\finalproject\\data\\United_States_Fires\\United_States_2015_Fires\\', '2015')
+    #main('C:\\Users\\nico\\Desktop\\Stanford\\OneDrive - Stanford\\Courses\\CS229\\finalproject\\data\\United_States_Fires\\United_States_2018_Fires\\', '2018')
+    #main('C:\\Users\\nico\\Desktop\\Stanford\\OneDrive - Stanford\\Courses\\CS229\\finalproject\\data\\United_States_Fires\\United_States_2015_Fires\\', '2015')
 

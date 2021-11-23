@@ -11,6 +11,7 @@ from matplotlib.collections import PolyCollection
 from matplotlib.patches import Polygon
 import matplotlib as mpl
 import itertools
+from matplotlib import pyplot
 
 '''
 The functions in this file can be used for working through the data of a single fire.
@@ -142,7 +143,9 @@ def multi_day_fire_representation(shape_records, sorted_df, final_fire_indices):
 
             x_indices = (round((min_Range[0] - xRange[0])/xDiff), round((max_Range[0] - xRange[0])/xDiff))
             y_indices = (round((min_Range[1] - yRange[0])/yDiff), round((max_Range[1] - yRange[0])/yDiff))
-
+            
+            x_indices = (int(x_indices[0]), int(x_indices[1]))
+            y_indices = (int(y_indices[0]), int(y_indices[1]))
 
             a = itertools.product(list(range(max(x_indices[0] - 1, 0), min(x_indices[1] + 1, len(x_coordinates)))), list(range(max(y_indices[0] - 1, 0), min(y_indices[1] + 1, len(y_coordinates)))))
             '''
@@ -166,3 +169,46 @@ def multi_day_fire_representation(shape_records, sorted_df, final_fire_indices):
                     break
         day_fire_paths = [new_path]
     return multiDayFireGrid
+
+def plot_multi_day_fire_from_npy(month_, year_, ID_, custom_path = "./../data/United_States_Fires/United_States_{year}_Fires/{month}/multi_day/{ID}.npy", month_shape = None):
+    '''
+    For a specific fire ID from a given month and year, plot from the .npy representation
+    
+    Inputs:
+    month --> String of type 'jan', 'feb', 'mar', 'apr', 'may', 'jun', 'jul', 'aug', 'sep', 'oct', 'nov', 'dec
+    year --> string of type '2019', '2018', etc.
+    ID_ --> string with fire ID (e.g. '20034923')
+    custom_path --> string with your custom path to the .npy file
+    
+    Outputs:
+    Plots for the multiple day representation of a fire
+    
+    '''
+    # Read in our shapefile for month and year
+    if month_shape is None:
+        month_shape = np.load(custom_path.format(month = month_, year = year_, ID = ID_))
+
+    # make a color map of fixed colors
+    cmap = mpl.colors.ListedColormap(['green', 'blue', 'red'])
+    bounds=[-.1, 0.2, .8, 1.1]
+    norm = mpl.colors.BoundaryNorm(bounds, cmap.N)
+    # tell imshow about color map so that only set colors are used
+    prev_shapes = np.zeros(month_shape[0].shape)
+    for i in range(0, len(month_shape)):
+        day_plot = np.zeros(month_shape[i].shape)
+        for j in range(len(day_plot)):
+            for k in range(len(day_plot[j])):
+                if month_shape[i][j][k] == 1:
+                    day_plot[j][k] = 1
+                elif prev_shapes[j][k] > 0:
+                    day_plot[j][k] = prev_shapes[j][k]
+
+
+        img = pyplot.imshow(day_plot,interpolation='nearest',
+                        cmap = cmap,norm=norm)
+            # make a color bar
+        pyplot.colorbar(img,cmap=cmap,
+                        norm=norm,boundaries=bounds,ticks=[0,1])
+
+        pyplot.show()
+        prev_shapes = 0.5 * np.bitwise_or(prev_shapes > 0, month_shape[i] > 0)
