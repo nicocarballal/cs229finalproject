@@ -189,7 +189,7 @@ def plot_multi_day_fire_from_npy(month_, year_, ID_, custom_path = "./../data/Un
         month_shape = np.load(custom_path.format(month = month_, year = year_, ID = ID_))
 
     # make a color map of fixed colors
-    cmap = mpl.colors.ListedColormap(['green', 'blue', 'red'])
+    cmap = mpl.colors.ListedColormap(['green', [.5, .1, .1], 'red'])
     bounds=[-.1, 0.2, .8, 1.1]
     norm = mpl.colors.BoundaryNorm(bounds, cmap.N)
     # tell imshow about color map so that only set colors are used
@@ -209,6 +209,15 @@ def plot_multi_day_fire_from_npy(month_, year_, ID_, custom_path = "./../data/Un
             # make a color bar
         pyplot.colorbar(img,cmap=cmap,
                         norm=norm,boundaries=bounds,ticks=[0,1])
-
+        legend_elements = [Line2D([0], [0], marker = 'o', color = 'w', markerfacecolor=[.5, .1, .1], markersize = 15,
+                              label='Previous Burn'),
+                   Line2D([0], [0], marker='o', color='w', label='Active Burn',
+                          markerfacecolor='r', markersize=15),
+                   Line2D([0], [0], marker='o', color='w', label='Unburned Area',
+                          markerfacecolor='g', markersize=15)]
+        pyplot.xlabel("Longitude Unit Fire Cells")
+        pyplot.ylabel("Latitude Unit Fire Cells")
+        fig, ax = plt.subplots()
+        ax.legend(handles=legend_elements, loc='center')
         pyplot.show()
         prev_shapes = 0.5 * np.bitwise_or(prev_shapes > 0, month_shape[i] > 0)
