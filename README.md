@@ -1,8 +1,6 @@
 # Modeling Next Day Wildfire Spread with Convolutional Nueral Nets
 Each year wildfires cause billions of dallors in damages across the nation and world. In this project we want to apply powerful machine learning techniques to begin developing tools for improving wildfire prediction. Specifically, we want to predict the spread of wildfires given historical information of the fire and goelogical data for the burn area. More accurate spread prediction will help firefighters more effectively and efficiently allocate limited resources to fire suppression.
 
-![Wildfirs Spread in CA's Pacific Coast Region](/images/wildfire-spread-day-42.png)
-
 Detailed information on our porject and results can be found in our [report](https://office365stanford-my.sharepoint.com/:b:/g/personal/nicocarb_stanford_edu/EQ2pOLEzCH5JngxVezfM4bYBWVJ_thnwR6wQdfmZejgjGg?e=JliTmc).
 
 ## Members
